@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search> 
+  
+  
+    
+    <entry>
+      <title>Python图像处理 （一）</title>
+      <link href="/2019/12/08/Python%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/"/>
+      <url>/2019/12/08/Python%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/</url>
+      
+        <content type="html"><![CDATA[<p>修改像素的通道值有两种方式。第一种方式采用Pillow.Image对象的getpixel和putpixel方法，每个像素使用元组表示三通道。第二种方式使用生成Pillow.Image对象，然后转换成numpy.array数组处理，对于每个像素，其用数组表示三通道值。</p><a id="more"></a><h2 id="方法一代码（参见CSDN）："><a href="#方法一代码（参见CSDN）：" class="headerlink" title="方法一代码（参见CSDN）："></a>方法一代码（参见<a href="https://blog.csdn.net/qq_38161040/article/details/87563535" target="_blank" rel="noopener">CSDN</a>）：</h2><pre><code>from PIL import Imageimg = Image.open(&quot;安娜的橱窗.jpg&quot;)img = img.convert(&apos;RGBA&apos;) # 修改颜色通道为RGBAx, y = img.size # 获得长和宽# 设置每个像素点颜色的透明度for i in range(x):    for k in range(y):        color = img.getpixel((i, k))        color = color[:-1] + (100, )        img.putpixel((i, k), color)img.save(&quot;安娜的橱窗_switch.PNG&quot;) # 要保存为.PNG格式的图片才可以</code></pre><h2 id="方法二代码："><a href="#方法二代码：" class="headerlink" title="方法二代码："></a>方法二代码：</h2><pre><code>from PIL  import Imageimport numpy as npimg_origin = Image.open(&apos;/Users/dd/Desktop/ttt3.png&apos;)#先读取原始图像，创建原始图片对象。img_ary = np.array(img_origin)#转化成numpy数组对象</code></pre><p>注：如果标注只是处理灰度图，接下来可以不用做rgb转换。转换格式发生在读取为np数组之前</p><pre><code>img_rgb = img_origin.convert(&apos;RGB&apos;)#转换成rgb格式的图像对象，或者转换成带透明通道的rgba等等格式img_rgb_ary = np.array(img_rgb)#转换成数组对象rows,cols=img_rgb_ary.shape#获取数组对象的空间属性for i in range(rows):    for j in range(cols):        if (umg[i,j][0] &lt;=128):        umg[i,j] = [0,0,0]img = Image.fromarray(umg)img.show()img.save(&quot;/Users/dd/Desktop/ttt4.png&quot;)</code></pre><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>在数据处理中，方法二使用居多，因为不会只是单纯的修改像素，还可能有其他数组切片处理等等。也有一种方法采用split获取图像的通道，这种方法适用于图像的整体处理，单独提取出某个通道。</p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> tech </tag>
+            
+            <tag> Python </tag>
+            
+            <tag> Pillow </tag>
+            
+            <tag> 图像处理 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>半自动弹幕发射机 （一）</title>
+      <link href="/2019/12/03/%E5%8D%8A%E8%87%AA%E5%8A%A8%E5%BC%B9%E5%B9%95%E5%8F%91%E5%B0%84%E6%9C%BA/"/>
+      <url>/2019/12/03/%E5%8D%8A%E8%87%AA%E5%8A%A8%E5%BC%B9%E5%B9%95%E5%8F%91%E5%B0%84%E6%9C%BA/</url>
+      
+        <content type="html"><![CDATA[<h3 id="今年英雄联盟世界总决赛比赛期间，b站直播间气氛火热，弹幕铺天盖地，可恨自己手速不够快，刷出的”777”根本不够看。于是想到了做一个弹幕发射机，实现自动化发射弹幕。"><a href="#今年英雄联盟世界总决赛比赛期间，b站直播间气氛火热，弹幕铺天盖地，可恨自己手速不够快，刷出的”777”根本不够看。于是想到了做一个弹幕发射机，实现自动化发射弹幕。" class="headerlink" title="今年英雄联盟世界总决赛比赛期间，b站直播间气氛火热，弹幕铺天盖地，可恨自己手速不够快，刷出的”777”根本不够看。于是想到了做一个弹幕发射机，实现自动化发射弹幕。"></a>今年英雄联盟世界总决赛比赛期间，b站直播间气氛火热，弹幕铺天盖地，可恨自己手速不够快，刷出的”777”根本不够看。于是想到了做一个弹幕发射机，实现自动化发射弹幕。</h3><h2 id="实现思路"><a href="#实现思路" class="headerlink" title="实现思路"></a>实现思路</h2><p>总体上讲有两种不同的实现方式。第一种方式使用python中的requests库自动发送预设的文本，模拟输入和点击，第二种方式使用js脚本，加载到控制台或者油猴插件刷屏，本篇先说一下python方案的实现方式。</p><h2 id="运行环境"><a href="#运行环境" class="headerlink" title="运行环境"></a>运行环境</h2><p>python方案也有两种。</p><a id="more"></a><p>第一种方式采用selenium测试平台实现模拟登陆，手动提交极验验证码或者破解极验验证码自动提交（成功率不高），然后浏览器自动跳转到对应直播间刷弹幕。<br>需要的运行环境：</p><pre><code>python==3.7/selenium/threading/time/beautifulsoup4/requests/json/re</code></pre><p>第二种方案利用登陆后获取的cookie，解析得到post需要提交的参数列表，添加需要弹幕参数后发送请求。<br>需要的运行环境：</p><pre><code>python==3.7/threading/time/requests/json/re</code></pre><p>建议使用虚拟环境</p><h2 id="代码细节"><a href="#代码细节" class="headerlink" title="代码细节"></a>代码细节</h2><h3 id="使用selenium"><a href="#使用selenium" class="headerlink" title="使用selenium"></a>使用selenium</h3><p>必须熟练使用Chrome等浏览器的调试工具，按F12或者右键调试都可以。</p><p>首先构造一个封装登陆操作及参数的类</p><pre><code>class loginBili():    def __init__(self):    #构造函数        self.url = &apos;https://www.bilibili.com/&apos;        self.curl = &apos;https://passport.bilibili.com/login&apos;         # B站登录界面        self.uroom = &quot;https://live.bilibili.com/&quot; + roomid        #直播间链接        self.umsg = &apos;https://api.live.bilibili.com/msg/send&apos;        #发送弹幕的api        self.browser = webdriver.Chrome()        #实例化一个浏览器对象        self.browseropt = webdriver.ChromeOptions()              self.wait = WebDriverWait(self.browser, 20)        # 定义显示等待，第一个参数是等待对象，第二个参数是等待时间        self.username = USERNAME        self.password = PASSWARD        #用户名和密码的私有参数，由用户自己输入        在上述参数中，发送弹幕的b站api可以在Chrome或者Charles软件中查看请求地址得到。webdriver.Chorme 是selenium的驱动库，相关驱动要到官网下载。        还可以使用Firefox/Safari等浏览器的驱动。</code></pre><p>现在看一下相关参数的获取：</p><pre><code>username = self.wait.until(EC.presence_of_element_located((By.ID, &apos;login-username&apos;)))#调用self.wait.until()是为了等待页面的加载和元素的定位，在定义时间内轮询等待操作完成。也可以采用其他等待方式，比如强制使用time.sleep()#EC.presence_of_element_located()是定位页面元素的方式，第一个参数是定位所使用的类别，比如类名，ID等等，第二个参数是类别对应的参数值。 username.send_keys(self.username)#send_keys 是selenium提供的针对页面元素操作的方法，将用户提供的用户名填充到页面表单中。    密码同理</code></pre><p>提交表单：</p><pre><code>button = self.get_login_btn(&apos;btn&apos;)#获取&apos;登陆&apos;按钮button.click()  #点击以提交用户数据</code></pre><p>判断是否登陆成功：</p><pre><code>if(self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, &apos;signin&apos;)))):                print(&apos;登陆成功&apos;)#在页面元素中找到不同于登陆页面的标志性元素即可判断。</code></pre><p>发送弹幕：</p><pre><code>同样分两步，找到并填充发送弹幕的文本框，找到并点击发送弹幕的按钮chat = self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, &apos;chat-input&apos;)))    chat.send_keys(chatmsg)time.sleep(1)#等待表单填写完成button = self.get_login_btn(&apos;bl-button&apos;) button.click()</code></pre><p>给发送弹幕加上发送间隔：</p><pre><code>def sendmsg(self,msg):    t = threading.Timer(120, self.sendmsg,[msg])    t.start()</code></pre><p>主函数调用：</p><pre><code>if __name__ == &apos;__main__&apos;:    dm = []    USERNAME = input(&quot;账号：\n&quot;)    PASSWARD = input(&quot;密码：\n&quot;)    roomid = input(&quot;直播间id：\n&quot;)     login = loginBili()    msg = &quot; test&quot;    try:        if login.login_start():            sendmsg(msg)    except:        raise</code></pre><p>至此，一个不知疲惫的弹幕发射器就完成了。流程很简单，要注意浏览器driver环境的配置和表单元素的获取。</p><h3 id="采用requests发送弹幕："><a href="#采用requests发送弹幕：" class="headerlink" title="采用requests发送弹幕："></a>采用requests发送弹幕：</h3><p>此方法速度相比于selenium更快，只是不够省心。</p><p>代码细节：</p><pre><code>cookie = &quot;xxxxxxxx&quot;#手动打开浏览器调试工具，获取当前的cookie，注意使用双引号提交token = re.search(r&apos;bili_jct=(.*?);&apos;, cookie).group(1)#使用正则表达式获取请求参数中的csrf_token,七天有效url_send = &apos;https://api.live.bilibili.com/msg/send&apos;#查找得到的弹幕发送apiheaders = {        &apos;User-Agent&apos;: &apos;Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36&apos;,        &apos;Cookie&apos;: cookie    }    data = {        &apos;color&apos;: &apos;16777215&apos;,        &apos;fontsize&apos;: &apos;25&apos;,        &apos;mode&apos;: &apos;1&apos;,        &apos;msg&apos;: msg,        #想要发送的弹幕文本        &apos;rnd&apos;: int(time.time()),        #时间戳        &apos;roomid&apos;: roomid,        &apos;csrf_token&apos;: token,        #csrf验证        &apos;csrf&apos;: token    }html_send = requests.post(url_send, data=data, headers=headers)#弹幕发送</code></pre><p>需要事先登陆b站，还要手动复制粘贴cookie，有些麻烦，但好在代码量很少，速度也很快。</p><h2 id="后续开发"><a href="#后续开发" class="headerlink" title="后续开发"></a>后续开发</h2><p>在方案一的基础上，又针对某些可以点歌的直播间设增加了点歌的功能，虽然她们唱的不咋好听吧。思路是爬取网易云歌单中的歌曲，保存到列表中，然后将歌曲名按照点歌的格式<br>发送到直播间，并且设置一定的点歌间隔。网易云的反爬措施做的还可以，歌曲时长的获取有点麻烦，因此没有后续的更新打算。就算获取到时长也很有可能遇到其他人插队点歌，看起来<br>还需要增加弹幕爬虫和解析。<br>至于方案二，增加了上文所说的弹幕爬虫和解析，并且将获取的弹幕转发给聊天机器人，再将聊天机器人的文本回复作为弹幕发送。挺无聊的一个小功能，因为机器人都太蠢了……</p><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>一个好的爬虫方案的实现，需要耐心和不断的测试。浏览器，正则表达式，加密解密等知识都要掌握，至少知道方向在哪儿。<br>代码已上传到<a href="https://github.com/did999/bilibili_danmugay/blob/master/README.md" target="_blank" rel="noopener">Github</a>。 </p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> tech </tag>
+            
+            <tag> Python </tag>
+            
+            <tag> 爬虫 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>GIT记录</title>
+      <link href="/2019/11/30/GIT%E8%AE%B0%E5%BD%95/"/>
+      <url>/2019/11/30/GIT%E8%AE%B0%E5%BD%95/</url>
+      
+        <content type="html"><![CDATA[<p>我想把hexo博客从github迁移到阿里云的centos服务器，顺便在centos上搭建一个git服务器。</p><a id="more"></a><h2 id="创建新用户"><a href="#创建新用户" class="headerlink" title="创建新用户"></a>创建新用户</h2><p>ssh连接centos服务器后，先添加一个专用于git版本控制的用户</p><pre><code>$ adduser git$ passwd  git #修改用户密码，权限暂时不用改</code></pre><h2 id="添加ssh密钥用于免密登陆"><a href="#添加ssh密钥用于免密登陆" class="headerlink" title="添加ssh密钥用于免密登陆"></a>添加ssh密钥用于免密登陆</h2><pre><code>使用ssh-key本地生成密钥使用scp将生成的pub公钥传送到目标主机使用cat 和 &gt;&gt; 命令将pub内容追加到 .ssh/authorized_keys </code></pre><h2 id="安装git"><a href="#安装git" class="headerlink" title="安装git"></a>安装git</h2><p>方法1. yum -y install git<br>方法2. 编程git源码<br>如果采用方法1，会安装yum源中比较旧的git，当然也可以尝试更换yum源，寻找较新版本的git<br>方法2是一种通用的方法，还可以指定git的安装目录。下面讲一下如何编译安装git以及配置git。</p><pre><code>$ wget https://github.com/git/git/archive/v2.24.0.tar.gz #在github上查找git的源码版本$ tar -zxf git-2.0.0.tar.gz #解压源码$ cd git-2.0.0$ make configure $ ./configure --prefix=/usr #设定git的编译目录，可以更改$ make all doc info #编译$ sudo make install install-doc install-html install-info</code></pre><p>以上就是完整的编译方式</p><pre><code>$ git clone git://git.kernel.org/pub/scm/git/git.git #更新git的方式</code></pre><p>如果指定的目录不在环境变量中，那么需要在用户的配置文件中添加git的环境变量，比如 写入/etc/profile 文件，才可以使得git命令生效。</p><h2 id="测试git服务"><a href="#测试git服务" class="headerlink" title="测试git服务"></a>测试git服务</h2><p>如果是多用户使用git服务器，可以建立bare仓库，该仓库不包含用户所使用的工作文件，只包含仓库的版本提交记录。使用git init –bare 初始化仓库</p><p>如果是采用的是 git init 命令初始化，将会在仓库下生成.git文件，这跟用户所使用的本地仓库类似。</p><p>远程仓库的命令执行:</p><pre><code>$ mkdir test.git #注意命名习惯$ cd test.git$ git init</code></pre><p>本地仓库的命令执行:</p><pre><code>$ cd sourcefile$ git init $ git add .  #添加所以文件到工作区$ git commit -m &apos;first commit&apos;  #提交$ git remote add origin git@ip:/path/test.git #path 是test.git的pwd路径$ git push -u origin master  #推送到远程仓库。如果遇到提示无权限推送，需要在远程centos主机下执行如下命令$ cd test.git$ vim config在文件的末尾添加如下代码[receive]denyCurrentBranch = ignore</code></pre><p>其他常用命令</p><pre><code>$ git branch dev #建立dev分支$ git checkout dev #切换到dev分支$ git branch -a #查看所有分支提交情形$ git status  #查看工作区的状态</code></pre><p>到此为止，git服务器搭建完成。如果是多人登陆git，为了安全着想，可以在远程主机上限制采用git用户名登陆的shell权限：</p><ol><li>在git用户目录下添加 git-command-shell文件夹</li><li>编辑 /etc/passwd 文件，将git对应的bash改成 git-shell</li></ol>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> tech </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>黑苹果</title>
+      <link href="/2019/11/26/%E9%BB%91%E8%8B%B9%E6%9E%9C/"/>
+      <url>/2019/11/26/%E9%BB%91%E8%8B%B9%E6%9E%9C/</url>
+      
+        <content type="html"><![CDATA[<p>Windows下从零到黑苹果</p><h3 id="一、在装机之前，如果使用已经购买的设备装黑果，就要先查询自己的硬件支不支持黑苹果-支持到哪个版本，如果还没有购买设备，最好根据黑苹果兼容列表和完美配置单等选购硬件。对于Intel平台，个人推荐华擎z370或者z390主板，技嘉尚可。"><a href="#一、在装机之前，如果使用已经购买的设备装黑果，就要先查询自己的硬件支不支持黑苹果-支持到哪个版本，如果还没有购买设备，最好根据黑苹果兼容列表和完美配置单等选购硬件。对于Intel平台，个人推荐华擎z370或者z390主板，技嘉尚可。" class="headerlink" title="一、在装机之前，如果使用已经购买的设备装黑果，就要先查询自己的硬件支不支持黑苹果/支持到哪个版本，如果还没有购买设备，最好根据黑苹果兼容列表和完美配置单等选购硬件。对于Intel平台，个人推荐华擎z370或者z390主板，技嘉尚可。"></a>一、在装机之前，如果使用已经购买的设备装黑果，就要先<a href="https://blog.daliansky.net/Mojave-Hardware-Support-List.html" target="_blank" rel="noopener">查询</a>自己的硬件支不支持黑苹果/支持到哪个版本，如果还没有购买设备，最好根据黑苹果兼容列表和完美配置单等选购硬件。对于Intel平台，个人推荐华擎z370或者z390主板，技嘉尚可。</h3><h3 id="二、无聊是否装双系统，建议都先给主机或者笔记本先装一个windows10系统，不仅做启动盘要用到win系统，后续完善黑苹果同样要用到win系统。建议：如果不会安装或者不清楚安装windows的步骤，还是别折腾黑苹果了，只会更麻烦。"><a href="#二、无聊是否装双系统，建议都先给主机或者笔记本先装一个windows10系统，不仅做启动盘要用到win系统，后续完善黑苹果同样要用到win系统。建议：如果不会安装或者不清楚安装windows的步骤，还是别折腾黑苹果了，只会更麻烦。" class="headerlink" title="二、无聊是否装双系统，建议都先给主机或者笔记本先装一个windows10系统，不仅做启动盘要用到win系统，后续完善黑苹果同样要用到win系统。建议：如果不会安装或者不清楚安装windows的步骤，还是别折腾黑苹果了，只会更麻烦。"></a>二、无聊是否装双系统，建议都先给主机或者笔记本先装一个windows10系统，不仅做启动盘要用到win系统，后续完善黑苹果同样要用到win系统。建议：如果不会安装或者不清楚安装windows的步骤，还是别折腾黑苹果了，只会更麻烦。</h3><h3 id="三、当前准备的环境和工具：Windows10，8-16G-usb2-0-x-1-usb3-0-x-1-etcher软件-clover-configurator软件，-easyUEFI软件，diskgenius软件"><a href="#三、当前准备的环境和工具：Windows10，8-16G-usb2-0-x-1-usb3-0-x-1-etcher软件-clover-configurator软件，-easyUEFI软件，diskgenius软件" class="headerlink" title="三、当前准备的环境和工具：Windows10，8-16G(usb2.0 x 1,usb3.0 x 1), etcher软件,clover configurator软件， easyUEFI软件，diskgenius软件"></a>三、当前准备的环境和工具：Windows10，8-16G(usb2.0 x 1,usb3.0 x 1), <a href="https://etcher.io/" target="_blank" rel="noopener">etcher</a>软件,<a href="https://www.baidu.com/link?url=MMXPHiIgE3oJat9Cgt9NaWZ8DK-csjtoPepo87ZGpLB5xDCHxtPU3h0fnbceBRQSy2XOFD-3I1pmgaoXxpHG5lUsQBtTc9jbXLKFJvVDfXa&wd=&eqid=cebb41b70019ef84000000025ded04dc" target="_blank" rel="noopener">clover configurator</a>软件， easyUEFI软件，diskgenius软件</h3><a id="more"></a><h2 id="制作启动盘"><a href="#制作启动盘" class="headerlink" title="制作启动盘"></a>制作启动盘</h2><p>   下载镜像：<br>        下载地址：<a href="https://blog.daliansky.net/" target="_blank" rel="noopener">黑果小兵镜像</a><br>        注，网速不够好的情况下需要校验下载文件的md5，Windows请使用<a href="http://www.winmd5.com/" target="_blank" rel="noopener">winmd5</a>，将下载的安装镜像拖进winmd5窗口，核验md5值。<br>   镜像转入启动盘：<br>        下载etcher，打开镜像，选择U盘，点击Flash即可。Windows10需要以管理员权限运行。<br>        注，此处的u盘建议先使用usb3.0 u盘制作，如果在后续插入主机无法识别启动盘，更换usb2.0u盘，因主板而异</p><h2 id="安装Macos"><a href="#安装Macos" class="headerlink" title="安装Macos"></a>安装Macos</h2><p>   首先重启电脑，进入主板bios设置界面。一般来说关闭bios中的安全启动和快速启动，保存后退出。<br>   插入启动盘后再次重启，选中U盘引导，进入clover主菜单。<img alt="clover主菜单" data-src="https://i.loli.net/2019/12/08/dP2ulr9zmfiOtHN.png" class="lazyload">利用有线键盘的左右键选择不同的设定，空格作为输入键，回车是确认键。<br>   选中图标”Boot macos install from disk”，进入安装页面，顺利的话可以一直安装下去，先初始化电脑磁盘，再将系统复制到电脑的磁盘等等。在经历重启后在clover菜单会多出一个 “Boot macos install from mac”，选中后继续安装。再经历一些时间等设置后会重启出现 “Boot macos from mac”，选中后进入。<br>   安装clover configurator软件，将u盘中的EFI拷贝到磁盘的EFI分区。</p><h2 id="调试"><a href="#调试" class="headerlink" title="调试"></a>调试</h2><p>   根据自己的硬件和对应的机型更换clover中的config选项，例如有无HDMI，核显平台等等<br>   替换某些驱动，例如某些z390主板无法使用AptioMemoryFix-64.efi驱动，需要更换成OsxAptioFix2Drv-free2000.efi。该驱动位于/EFI/CLOVER/drivers/off目录下 或者 <a href="https://blog.daliansky.net/Slide-value-acquisition-and-calculation.html" target="_blank" rel="noopener">Slide值获取及计算</a><br>   其他<a href="https://blog.daliansky.net/Common-problems-and-solutions-in-macOS-Catalina-10.15-installation.html" target="_blank" rel="noopener">常见问题</a>等</p><h2 id="完善"><a href="#完善" class="headerlink" title="完善"></a>完善</h2><p>   开启显示器hidpi，开启笔记本睡眠，三码注入，开启nvram，适配雷电拓展，开启airdrop，开启随航，更换无线网卡等等。<br>   这些内容如果涉及不到就不用看。</p><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>   这是一篇不够完善的粗略介绍文章，业已足够从零安装上黑苹果。后续驱动的更新等等需要掌握更多工具和知识。如果在安装过程中出现任何困惑可以加q群（群号：838739020）讨论。</p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> diy </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Hello World</title>
+      <link href="/2019/07/13/hello-world/"/>
+      <url>/2019/07/13/hello-world/</url>
+      
+        <content type="html"><![CDATA[<p>假装自己不是一个咸鱼ovo</p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> life </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+  
+  
+</search>
